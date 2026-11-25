@@ -1,16 +1,30 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import CashboxCard from "../components/CashboxCard.vue";
-import { useCashboxes, type Cashbox } from "../composables/useCashboxes";
 import { useRouter } from "vue-router";
 import AppHeader from "../components/AppHeader.vue";
+import CashboxCard from "../components/CashboxCard.vue";
+import CreateCashboxModal from "../components/CreateCashboxModal.vue";
+import EditCashboxModal from "../components/EditCashboxModal.vue";
+import { useCashboxes, type Cashbox } from "../composables/useCashboxes";
 
 const { cashboxes, cashier, isLoading, error, loadCashboxes } = useCashboxes();
 
+const editingCashbox = ref<Cashbox | null>(null);
+
+function handleEditCashbox(cashbox: Cashbox) {
+  editingCashbox.value = cashbox;
+}
+
+async function handleCashboxUpdated() {
+  editingCashbox.value = null;
+  await loadCashboxes();
+}
+
 const currentPage = ref(1);
 const pageSize = 3;
-
 const router = useRouter();
+
+const isCreateModalOpen = ref(false);
 
 const pageCount = computed(() =>
   Math.max(1, Math.ceil(cashboxes.value.length / pageSize)),
@@ -24,10 +38,13 @@ const visibleCashboxes = computed(() => {
 function openCashbox(cashbox: Cashbox) {
   router.push({
     name: "workspace",
-    params: {
-      id: cashbox.id,
-    },
+    params: { id: cashbox.id },
   });
+}
+
+async function handleCashboxCreated() {
+  isCreateModalOpen.value = false;
+  await loadCashboxes();
 }
 
 onMounted(() => {
@@ -50,6 +67,14 @@ onMounted(() => {
             Каталог, чеки и отчёты хранятся отдельно для каждой кассы.
           </p>
         </div>
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          @click="isCreateModalOpen = true"
+        >
+          + Создать кассу
+        </button>
       </div>
 
       <div v-if="isLoading" class="page-message">Загружаем кассы...</div>
@@ -70,6 +95,7 @@ onMounted(() => {
             :cashbox="cashbox"
             :index="(currentPage - 1) * pageSize + index"
             @open="openCashbox"
+            @edit="handleEditCashbox"
           />
         </div>
 
@@ -109,6 +135,18 @@ onMounted(() => {
         <strong>Продолжите с нужной кассы</strong>
         <p>Статус смены и доступные операции появятся после открытия кассы.</p>
       </div>
+
+      <CreateCashboxModal
+        :open="isCreateModalOpen"
+        @close="isCreateModalOpen = false"
+        @created="handleCashboxCreated"
+      />
+      <EditCashboxModal
+        :open="Boolean(editingCashbox)"
+        :cashbox="editingCashbox"
+        @close="editingCashbox = null"
+        @updated="handleCashboxUpdated"
+      />
     </main>
   </div>
 </template>

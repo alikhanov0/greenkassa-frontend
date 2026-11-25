@@ -9,6 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   open: [cashbox: Cashbox];
+  edit: [cashbox: Cashbox];
 }>();
 
 const formattedBalance = computed(() => {
@@ -52,13 +53,23 @@ async function copySerial() {
 
       <p class="cashbox-card__balance">{{ formattedBalance }} ₸</p>
 
-      <button
-        class="btn btn-primary btn-full"
-        type="button"
-        @click="emit('open', cashbox)"
-      >
-        Открыть кассу
-      </button>
+      <div class="cashbox-card__actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          @click="emit('open', cashbox)"
+        >
+          Открыть кассу
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          @click="emit('edit', cashbox)"
+        >
+          Изменить
+        </button>
+      </div>
     </div>
   </article>
 </template>
@@ -137,6 +148,20 @@ async function copySerial() {
   line-height: 35px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.cashbox-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cashbox-card__actions .btn-primary {
+  flex: 1;
+}
+
+.cashbox-card__actions .btn-secondary {
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

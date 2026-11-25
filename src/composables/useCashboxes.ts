@@ -17,6 +17,16 @@ export interface Cashier {
   name: string;
 }
 
+export interface CreateCashboxPayload {
+  name: string;
+  address?: string;
+}
+
+export interface UpdateCashboxPayload {
+  name: string;
+  address?: string;
+}
+
 interface ApiResponse<T> {
   data: T;
 }
@@ -77,11 +87,81 @@ export function useCashboxes() {
     }
   }
 
+  async function createCashbox(payload: CreateCashboxPayload) {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      logout();
+      await router.push({ name: "login" });
+      return;
+    }
+
+    const response = await fetch("/api/v1/cashboxes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: payload.name,
+        ...(payload.address ? { address: payload.address } : {}),
+      }),
+    });
+
+    if (response.status === 401) {
+      logout();
+      await router.push({ name: "login" });
+      return;
+    }
+
+    const json = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(json?.error?.message || "Не удалось создать кассу");
+    }
+
+    await loadCashboxes();
+  }
+
+  async function updateCashbox(id: number, payload: UpdateCashboxPayload) {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      logout();
+      await router.push({ name: "login" });
+      return;
+    }
+
+    const response = await fetch(`/api/v1/cashboxes/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: payload.name,
+        ...(payload.address ? { address: payload.address } : {}),
+      }),
+    });
+
+    if (response.status === 401) {
+      logout();
+      await router.push({ name: "login" });
+      return;
+    }
+
+    const json = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(json?.error?.message || "Не удалось обновить кассу");
+    }
+
+    await loadCashboxes();
+  }
+
   return {
     cashboxes,
     cashier,
     isLoading,
     error,
     loadCashboxes,
+    createCashbox,
+    updateCashbox,
   };
 }

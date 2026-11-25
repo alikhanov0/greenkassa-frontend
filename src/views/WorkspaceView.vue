@@ -62,7 +62,7 @@ onMounted(() => {
   <main class="workspace">
     <p class="text-caption">РАБОЧЕЕ ПРОСТРАНСТВО</p>
 
-    <h1 class="text-page-title">Касса №{{ route.params.id }}</h1>
+    <h1 class="text-page-title">{{ cashbox?.name }}</h1>
 
     <p class="text-body">Касса выбрана. Здесь будет рабочее место кассира.</p>
 
