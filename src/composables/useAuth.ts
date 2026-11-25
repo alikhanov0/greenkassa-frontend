@@ -51,11 +51,17 @@ export function useAuth() {
       isLoading.value = false;
     }
   }
+  function logout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    isAuthenticated.value = false;
+  }
 
   return {
     isLoading,
     error,
     isAuthenticated,
     login,
+    logout,
   };
 }

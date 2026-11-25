@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAuth } from "../composables/useAuth";
+import { useRouter } from "vue-router";
 
 const username = ref("");
 const password = ref("");
 const showPassword = ref(false);
 
 const { login, isLoading, error, isAuthenticated } = useAuth();
+const router = useRouter();
 
 async function handleSubmit() {
   if (!username.value.trim() || !password.value) {
@@ -14,6 +16,9 @@ async function handleSubmit() {
   }
 
   await login(username.value.trim(), password.value);
+  if (isAuthenticated.value) {
+    await router.replace("/cashboxes");
+  }
 }
 </script>
 
